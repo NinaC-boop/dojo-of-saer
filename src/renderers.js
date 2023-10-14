@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
 
+//hello
 class Box extends PureComponent {
   render() {
     const size = 30;
