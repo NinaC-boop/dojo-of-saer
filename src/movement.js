@@ -38,6 +38,9 @@ const distanceFromPlayer = 30;
 const getAngleFromPlayer = () => {
     // if negative the mouse is behind the player
     const distanceX = mouseX - playerX;
+    const distanceY = mouseY - playerY;
+
+    
 }
 
 const MoveIndicator = (entities, { input }) => {
