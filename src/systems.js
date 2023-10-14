@@ -1,8 +1,13 @@
+
 let mouseX = 0;
 let mouseY = 0;
 let speed = 0.03;
 let boxx = -1;
 let boxy = -1;
+
+let animationTimer = 2000;
+
+
 
 const MoveBox = (entities, { input }) => {
   //-- I'm choosing to update the game state (entities) directly for the sake of brevity and simplicity.
