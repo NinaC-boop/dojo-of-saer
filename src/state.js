@@ -1,12 +1,12 @@
-import { Box, Enemy } from "./renderers";
+import { Box, MeleeEnemy, RangedEnemy } from "./renderers";
 
 let score = 0;
 let multiplier = 1;
 let multiplierTimer = 0;
 let bestMultiplier = 1;
 let kills = 0;
-let spawnLength = 1000;
-let spawnTimer = 1000; // game ticks until next spawn
+let spawnLength = 800;
+let spawnTimer = 800; // game ticks until next spawn
 
 let maxEnemies = 5;
 let currentEnemies = 0;
@@ -35,8 +35,18 @@ function spawnEnemies(entities) {
 }
 
 function addEnemy(entities) {
-  entities[`enemy${totalSpawnedEnemies}`] = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <Enemy />, isAlive: true };
+  let enemy;
 
+  switch (Math.round(Math.random())) {
+    case 0:
+      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <RangedEnemy />, isAlive: true, type: 'ranged' };
+      break;
+    default:
+      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <MeleeEnemy />, isAlive: true, type: 'melee' };
+      break;
+  }
+
+  entities[`enemy${totalSpawnedEnemies}`] = enemy;
   currentEnemies++;
   totalSpawnedEnemies++;
   return entities;

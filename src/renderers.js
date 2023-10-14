@@ -12,10 +12,22 @@ class Box extends PureComponent {
   }
 }
 
-export { Box };
+
+class Indicator extends PureComponent {
+  render() {
+    const size = 5;
+    const x = this.props.x - size / 2;
+    const y = this.props.y - size / 2;
+    return (
+      <div style={{ position: "absolute", width: size, height: size, backgroundColor: "yellow", left: x, top: y }} />
+    );
+  }
+}
+
+export { Box, Indicator };
 
 
-class Enemy extends PureComponent {
+class MeleeEnemy extends PureComponent {
   render() {
     const size = 30;
     const x = this.props.x - size / 2;
@@ -26,4 +38,15 @@ class Enemy extends PureComponent {
   }
 }
 
-export { Enemy };
+class RangedEnemy extends PureComponent {
+  render() {
+    const size = 30;
+    const x = this.props.x - size / 2;
+    const y = this.props.y - size / 2;
+    return (
+      <div style={{ position: "absolute", width: size, height: size, backgroundColor: "green", left: x, top: y }} />
+    );
+  }
+}
+
+export { MeleeEnemy, RangedEnemy };
