@@ -49,4 +49,16 @@ class RangedEnemy extends PureComponent {
   }
 }
 
-export { MeleeEnemy, RangedEnemy };
+class Bullet extends PureComponent {
+  render() {
+    const width = 30;
+    const height = 3;
+    const x = this.props.x - width / 2;
+    const y = this.props.y - height / 2;
+    return (
+      <div style={{ position: "absolute", width: width, height: height, backgroundColor: "yellow", left: x, top: y }} />
+    );
+  }
+}
+
+export { MeleeEnemy, RangedEnemy, Bullet };
