@@ -1,4 +1,5 @@
 import { Bullet } from "./renderers";
+import { AnimationHandler, AnimationType } from './animation';
 
 let mouseX = 0;
 let mouseY = 0;
@@ -11,7 +12,7 @@ let enemyRangedRange = 300;
 let enemyFleeRange = 100;
 let gameWidth = 800;
 let gameHeight = 600;
-let hitbox = 20;
+let hitbox = 30;
 let bulletCounter = 0;
 let enemyBulletCooldown = 200;
 
@@ -33,7 +34,7 @@ const PlayerState = {
 }
 
 let playerState = PlayerState.Idle;
-
+const animationHandler = new AnimationHandler();
 const Move = (entities, { input }) => {
     entities = MovePlayer(entities, { input });
     entities = MoveEnemies(entities, { input });
@@ -75,7 +76,7 @@ const MovePlayer = (entities, { input }) => {
     //-- That said, it's probably worth considering performance implications in either case.
 
 
-    if (playerState !== PlayerState.Attack) {
+    if (playerState !== PlayerState.Attack && playerState !== PlayerState.Dead) {
         if (input.some(x => x.name === "onMouseDown")) {
             playerState = PlayerState.Attack;
             defaultPayload = input.find(x => x.name === "onMouseDown").payload;
@@ -132,13 +133,22 @@ const MovePlayer = (entities, { input }) => {
             player.x += velocityX;
             player.y += velocityY;
 
+            // leave trail particles eventually
+
 
             break;
         case PlayerState.Dead:
             // show death animtion
-
+            if (animationHandler.hasEnded()) {
+                break;
+            }
+            animationHandler.play(player, "player", AnimationType.Dead);
+            animationHandler.handleAnimationTime();
+            // player.colour = "purple"
             
             // play death sound
+
+            // restart game
             break;
         default:
             player.isAttacking = false;
@@ -251,6 +261,9 @@ const MoveBullets = (entities, { input }) => {
         if (bullet) {
             bullet.x += bullet.uX;
             bullet.y += bullet.uY;
+            if (isBulletOutOfBounds(bullet)) {
+                delete entities[`b${i}`];
+            }
         }
     }
   
@@ -279,6 +292,13 @@ function calcUnitVectorFromVector(x, y) {
     return [x / magnitude, y / magnitude];
 }
 
+function isBulletOutOfBounds(bullet) {
+    if (bullet.x < 0 || bullet.x > gameWidth || bullet.y < 0 || bullet.y > gameHeight) {
+        return true;
+    }
+    return false;
+}
+
 const UpdateEntities = (entities, { input }) => {
     const player = entities["player"];
     let numEntities = Object.keys(entities).length;
@@ -289,7 +309,6 @@ const UpdateEntities = (entities, { input }) => {
             const distanceToPlayer = Math.round(getDistanceBetweenPlayerAndEntity(player, enemy));
             if (distanceToPlayer < hitbox) {
                 if (player.isAttacking === false) {
-                    console.log('you got killed')
                     player.isAlive = false;
                     playerState = PlayerState.Dead;
                 } else {
@@ -305,11 +324,9 @@ const UpdateEntities = (entities, { input }) => {
             const distanceToPlayer = Math.round(getDistanceBetweenPlayerAndEntity(player, bullet));
             if (distanceToPlayer < hitbox) {
                 if (player.isAttacking === false) {
-                    console.log('you got killed')
                     player.isAlive = false;
                     playerState = PlayerState.Dead;
                 } else {
-                    console.log('you have hit the bullet')
                     bullet.isAlive = false;
                 }
             }

@@ -7,11 +7,10 @@ class Box extends PureComponent {
     const x = this.props.x - size / 2;
     const y = this.props.y - size / 2;
     return (
-      <div style={{ position: "absolute", width: size, height: size, backgroundColor: "red", left: x, top: y }} />
+      <div style={{ position: "absolute", width: size, height: size, backgroundColor: this.props.colour ? this.props.colour : "red", left: x, top: y }} />
     );
   }
 }
-
 
 class Indicator extends PureComponent {
   render() {
@@ -61,4 +60,24 @@ class Bullet extends PureComponent {
   }
 }
 
-export { MeleeEnemy, RangedEnemy, Bullet };
+class Scoreboard extends PureComponent {
+  render() {
+    return (
+      <div style={{ position: "absolute", left: 20, top: 20 }}>
+        { this.props.score }
+      </div>
+    );
+  }
+}
+
+class Multiplier extends PureComponent {
+  render() {
+    return (
+      <div style={{ position: "absolute", textAlign: 'right', width: this.props.gameWidth - 20, left: 20, top: this.props.gameHeight - 40 }}>
+        { `x ${this.props.multiplier}` }
+      </div>
+    );
+  }
+}
+
+export { MeleeEnemy, RangedEnemy, Bullet, Scoreboard, Multiplier };

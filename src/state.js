@@ -44,7 +44,9 @@ function addEnemy(entities) {
       enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <RangedEnemy />, isAlive: true, type: 'ranged', isAttacking: false, cooldown: 0 };
       break;
     default:
-      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <MeleeEnemy />, isAlive: true, type: 'melee', isAttacking: false, cooldown: 0 };
+      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <RangedEnemy />, isAlive: true, type: 'ranged', isAttacking: false, cooldown: 0 };
+
+      // enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <MeleeEnemy />, isAlive: true, type: 'melee', isAttacking: false, cooldown: 0 };
       break;
   }
 
@@ -68,21 +70,47 @@ function addEnemy(entities) {
 }
 
 function UpdatePlayState(entities) {
+  // update multiplier ticks
+  if (multiplierTimer > 0) {
+    multiplierTimer--;
+  } else {
+    multiplier = 1;
+  }
+
+  // update kills and score
   for (const id in entities) {
     const entity = entities[id];
     if (entity && entity.isAlive === false) {
       if (id.startsWith('e')) {
-        console.log(`killing ${id}: ${entities[id]}`);
         kills++;
-        delete entities[id];
         currentEnemies--;
+        delete entities[id];
+
+        updateMultiplierAfterKill();
+        score += multiplier * 10;
       } else if (id.startsWith('b')) {
-        console.log(`killing ${id}: ${entities[id]}`);
         delete entities[id];
       }
     }
   }
+  
+  // update entities
+  entities['scoreboard'].score = score;
+  entities['multiplier'].multiplier = multiplier;
+  updateMaxEnemies();
   return entities;
+}
+
+function updateMultiplierAfterKill() {
+  multiplierTimer = 600;
+  multiplier++;
+  if (multiplier > bestMultiplier) {
+    bestMultiplier = multiplier;
+  }
+}
+
+function updateMaxEnemies() {
+  maxEnemies = 5 + Math.round(score / 600);
 }
 
 export { UpdateState };
