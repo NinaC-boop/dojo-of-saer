@@ -22,13 +22,13 @@ const MoveBox = (entities, { input }) => {
     mouseY = payload.pageY;
   }
 
-  const box1 = entities["box1"];
-  boxx = box1.x;
-  boxy = box1.y;
+  const player = entities["player"];
+  boxx = player.x;
+  boxy = player.y;
 
   if (boxx !== mouseX && boxy !== mouseY) {
-    box1.x = boxx + (mouseX - boxx) * speed;
-    box1.y = boxy + (mouseY - boxy) * speed;
+    player.x = boxx + (mouseX - boxx) * speed;
+    player.y = boxy + (mouseY - boxy) * speed;
   }
 
   return entities;

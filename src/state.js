@@ -68,14 +68,17 @@ function addEnemy(entities) {
 }
 
 function UpdatePlayState(entities) {
-  for (const property in entities) {
-    const entity = entities[property];
+  for (const id in entities) {
+    const entity = entities[id];
     if (entity && entity.isAlive === false) {
-      if (property.startsWith('e')) {
-        console.log(`killing ${property}: ${entities[property]}`);
+      if (id.startsWith('e')) {
+        console.log(`killing ${id}: ${entities[id]}`);
         kills++;
-        delete entities[property];
+        delete entities[id];
         currentEnemies--;
+      } else if (id.startsWith('b')) {
+        console.log(`killing ${id}: ${entities[id]}`);
+        delete entities[id];
       }
     }
   }

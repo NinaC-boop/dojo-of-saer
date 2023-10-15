@@ -56,14 +56,14 @@ const getAngleFromPlayer = () => {
 
 const MoveIndicator = (entities, { input }) => {
     const indicator = entities["indicator"];
-    const box1 = entities["box1"];
+    const player = entities["player"];
     const angle = getAngleFromPlayer();
     
     const indicatorDistanceX = Math.cos(angle) * distanceFromPlayer;
     const indicatorDistanceY = Math.sin(angle) * distanceFromPlayer;
 
-    indicator.x = box1.x + indicatorDistanceX;
-    indicator.y = box1.y + indicatorDistanceY;
+    indicator.x = player.x + indicatorDistanceX;
+    indicator.y = player.y + indicatorDistanceY;
 
     return entities;
 }
@@ -89,22 +89,22 @@ const MovePlayer = (entities, { input }) => {
       mouseX = defaultPayload.pageX;
       mouseY = defaultPayload.pageY;
     }
-    const box1 = entities["box1"];
+    const player = entities["player"];
 
     switch (playerState) {
         case PlayerState.Run:
-            box1.isAttacking = false;
+            player.isAttacking = false;
         
-            playerX = box1.x;
-            playerY = box1.y;
+            playerX = player.x;
+            playerY = player.y;
 
             if (playerX !== mouseX && playerY !== mouseY) {
-              box1.x = playerX + (mouseX - playerX) * playerSpeed;
-              box1.y = playerY + (mouseY - playerY) * playerSpeed;
+              player.x = playerX + (mouseX - playerX) * playerSpeed;
+              player.y = playerY + (mouseY - playerY) * playerSpeed;
             }
             break;
         case PlayerState.Attack:
-            box1.isAttacking = true;
+            player.isAttacking = true;
             attackAnimation -= 1;
             if (attackAnimation <= 0) {
                 attackAnimation = ATTACK_ANIMATION_DURATION;
@@ -129,8 +129,8 @@ const MovePlayer = (entities, { input }) => {
 
             currentTravelled += totalTravelled;
 
-            box1.x += velocityX;
-            box1.y += velocityY;
+            player.x += velocityX;
+            player.y += velocityY;
 
 
             break;
@@ -141,7 +141,7 @@ const MovePlayer = (entities, { input }) => {
             // play death sound
             break;
         default:
-            box1.isAttacking = false;
+            player.isAttacking = false;
             break;
     }
 
@@ -153,7 +153,7 @@ const MovePlayer = (entities, { input }) => {
 };
 
 const MoveEnemies = (entities, { input }) => {
-    const player = entities["box1"];
+    const player = entities["player"];
     let numEntities = Object.keys(entities).length;
     for (let i = 0; i < numEntities && numEntities !== 1; i++) {
         const enemy = entities[`e${i}`];
@@ -262,7 +262,9 @@ const AddBullet = (player, entity, entities) => {
     const mX = player.x - entity.x;
     const mY = player.y - entity.y;
     const [uX, uY] = calcUnitVectorFromVector(mX, mY);
-    const bullet = { x: entity.x,  y: entity.y, renderer: <Bullet />, isAlive: true, type: 'ranged', isAttacking: true, rotation: calcAngleDegreesFromVector(mY, mX), uX, uY };
+    const rotation = calcAngleDegreesFromVector(mX, mY);
+    console.log(rotation)
+    const bullet = { x: entity.x,  y: entity.y, renderer: <Bullet />, isAlive: true, type: 'ranged', isAttacking: true, rotation, uX, uY };
     entities[`b${bulletCounter}`] = bullet;
     bulletCounter++;
     return entities;
@@ -278,7 +280,7 @@ function calcUnitVectorFromVector(x, y) {
 }
 
 const UpdateEntities = (entities, { input }) => {
-    const player = entities["box1"];
+    const player = entities["player"];
     let numEntities = Object.keys(entities).length;
     for (let i = 0; i < numEntities && numEntities !== 1; i++) {
         const enemy = entities[`e${i}`];
