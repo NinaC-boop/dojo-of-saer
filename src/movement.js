@@ -1,3 +1,5 @@
+import { Bullet } from "./renderers";
+
 let mouseX = 0;
 let mouseY = 0;
 let playerSpeed = 0.01;
@@ -10,6 +12,8 @@ let enemyFleeRange = 100;
 let gameWidth = 800;
 let gameHeight = 600;
 let hitbox = 20;
+let bulletCounter = 0;
+let enemyBulletCooldown = 200;
 
 
 const ATTACK_ANIMATION_DURATION = 70;
@@ -33,6 +37,7 @@ let playerState = PlayerState.Idle;
 const Move = (entities, { input }) => {
     entities = MovePlayer(entities, { input });
     entities = MoveEnemies(entities, { input });
+    entities = MoveBullets(entities, { input });
     // entities = MoveIndicator(entities, { input });
   
     return entities;
@@ -88,6 +93,7 @@ const MovePlayer = (entities, { input }) => {
 
     switch (playerState) {
         case PlayerState.Run:
+            box1.isAttacking = false;
         
             playerX = box1.x;
             playerY = box1.y;
@@ -135,6 +141,7 @@ const MovePlayer = (entities, { input }) => {
             // play death sound
             break;
         default:
+            box1.isAttacking = false;
             break;
     }
 
@@ -155,11 +162,11 @@ const MoveEnemies = (entities, { input }) => {
             switch(enemy.type) {
                 case 'ranged':
                     if (distanceToPlayer > enemyRangedRange) {
-                        applyEnemyState(player, EnemyState.RangedMovement, enemy, enemySpeed);
+                        applyEnemyState(player, EnemyState.RangedMovement, enemy, enemySpeed, entities);
                     } else if (distanceToPlayer < enemyFleeRange) {
-                        applyEnemyState(player, EnemyState.Flee, enemy, enemySpeed * 2);
+                        applyEnemyState(player, EnemyState.Flee, enemy, enemySpeed * 2, entities);
                     } else {
-                        applyEnemyState(player, EnemyState.RangedAttack, enemy, 0);
+                        applyEnemyState(player, EnemyState.RangedAttack, enemy, 0, entities);
                         // attack
                     }
                     break;
@@ -168,9 +175,9 @@ const MoveEnemies = (entities, { input }) => {
                     // if distance is in melee range, attack with melee attack
                     if (distanceToPlayer < enemyMeleeRange) {
                         // attack
-                        applyEnemyState(player, EnemyState.MeleeAttack, enemy, enemySpeed);
+                        applyEnemyState(player, EnemyState.MeleeAttack, enemy, enemySpeed, entities);
                     } else {
-                        applyEnemyState(player, EnemyState.Follow, enemy, enemySpeed);
+                        applyEnemyState(player, EnemyState.Follow, enemy, enemySpeed, entities);
                     }
                     break
             }
@@ -180,26 +187,38 @@ const MoveEnemies = (entities, { input }) => {
     return entities;
 };
 
-const ShootBullet = (entities) => {
-    return entities;
-}
-
 const EnemyState = {
     Follow: 0,
     MeleeAttack: 1,
-    RangedMovement: 2,
-    Flee: 3,
-    RangedAttack: 4,
+    RangedAttack: 2,
+    RangedMovement: 3,
+    Flee: 4,
 }
 
-function applyEnemyState(player, enemyState, entity, speed) {
+function applyEnemyState(player, enemyState, entity, speed, entities) {
+    // if there's a cooldown, do animation
+    if (entity.cooldown && entity.cooldown > 0) {
+        switch (enemyState) {
+            case EnemyState.MeleeAttack:
+            case EnemyState.RangedAttack:
+            case EnemyState.RangedMovement:
+            case EnemyState.Flee:
+            case EnemyState.Follow:
+            default:
+                return entities;
+        }
+    }
+
     switch (enemyState) {
         case EnemyState.MeleeAttack:
             entity.x = entity.x + (player.x - entity.x) * 1.5;
             entity.y = entity.y + (player.y - entity.y) * 1.5;
             entity.isAttacking = true;
             break;
-        // todo: ranged attack animation
+        case EnemyState.RangedAttack:
+            entity.isAttacking = true;
+            entity.cooldown = enemyBulletCooldown;
+            return AddBullet(player, entity, entities);
         case EnemyState.RangedMovement:
             entity.x = entity.x + (player.x - entity.x) * speed;
             entity.y = entity.y + (player.y - entity.y) * speed;
@@ -218,12 +237,44 @@ function applyEnemyState(player, enemyState, entity, speed) {
             break;
     }
 
-
-    return entity;
+    return entities;
 }
 
 function getDistanceBetweenPlayerAndEntity(player, entity) {
     return Math.abs(Math.sqrt((player.x - entity.x)**2 + (player.y - entity.y)**2));
+}
+
+
+const MoveBullets = (entities, { input }) => {
+    for (let i = 0; i < bulletCounter; i++) {
+        const bullet = entities[`b${i}`];
+        if (bullet) {
+            bullet.x += bullet.uX;
+            bullet.y += bullet.uY;
+        }
+    }
+  
+    return entities;
+};
+
+// shoots a bullet from the entity to the player
+const AddBullet = (player, entity, entities) => {
+    const mX = player.x - entity.x;
+    const mY = player.y - entity.y;
+    const [uX, uY] = calcUnitVectorFromVector(mX, mY);
+    const bullet = { x: entity.x,  y: entity.y, renderer: <Bullet />, isAlive: true, type: 'ranged', isAttacking: true, rotation: calcAngleDegreesFromVector(mY, mX), uX, uY };
+    entities[`b${bulletCounter}`] = bullet;
+    bulletCounter++;
+    return entities;
+}
+
+function calcAngleDegreesFromVector(x, y) {
+    return (Math.atan2(y, x) * 180) / Math.PI;
+}
+
+function calcUnitVectorFromVector(x, y) {
+    const magnitude = Math.sqrt(x * x + y * y);
+    return [x / magnitude, y / magnitude];
 }
 
 const UpdateEntities = (entities, { input }) => {
@@ -236,17 +287,25 @@ const UpdateEntities = (entities, { input }) => {
             const distanceToPlayer = Math.round(getDistanceBetweenPlayerAndEntity(player, enemy));
             if (distanceToPlayer < hitbox) {
                 if (player.isAttacking === false) {
+                    console.log('you got killed')
                     player.isAlive = false;
+                    playerState = PlayerState.Dead;
                 } else {
                     console.log('you have hit the enemy')
                     enemy.isAlive = false;
                 }
             }
+
+            if (enemy.cooldown > 0) {
+                enemy.cooldown--;
+            }
         } else if (bullet) {
             const distanceToPlayer = Math.round(getDistanceBetweenPlayerAndEntity(player, bullet));
             if (distanceToPlayer < hitbox) {
                 if (player.isAttacking === false) {
+                    console.log('you got killed')
                     player.isAlive = false;
+                    playerState = PlayerState.Dead;
                 } else {
                     console.log('you have hit the bullet')
                     bullet.isAlive = false;

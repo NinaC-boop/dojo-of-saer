@@ -56,7 +56,7 @@ class Bullet extends PureComponent {
     const x = this.props.x - width / 2;
     const y = this.props.y - height / 2;
     return (
-      <div style={{ position: "absolute", width: width, height: height, backgroundColor: "yellow", left: x, top: y }} />
+      <div style={{ position: "absolute", width: width, height: height, backgroundColor: "yellow", left: x, top: y, transform: `rotate(${this.props.rotation}deg)` }} />
     );
   }
 }

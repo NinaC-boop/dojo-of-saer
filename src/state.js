@@ -38,12 +38,13 @@ function spawnEnemies(entities) {
 function addEnemy(entities) {
   let enemy;
 
+  // randomize enemy attack type
   switch (Math.round(Math.random())) {
     case 0:
-      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <RangedEnemy />, isAlive: true, type: 'ranged', isAttacking: false };
+      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <RangedEnemy />, isAlive: true, type: 'ranged', isAttacking: false, cooldown: 0 };
       break;
     default:
-      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <MeleeEnemy />, isAlive: true, type: 'melee', isAttacking: false };
+      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <MeleeEnemy />, isAlive: true, type: 'melee', isAttacking: false, cooldown: 0 };
       break;
   }
 
