@@ -142,7 +142,7 @@ const MovePlayer = (entities, { input }) => {
             if (animationHandler.hasEnded()) {
                 break;
             }
-            animationHandler.play(player, "player", AnimationType.Dead);
+            entities = animationHandler.play(entities, "player", AnimationType.Dead);
             animationHandler.handleAnimationTime();
             // player.colour = "purple"
             
@@ -154,11 +154,6 @@ const MovePlayer = (entities, { input }) => {
             player.isAttacking = false;
             break;
     }
-
-
-  
-
-  
     return entities;
 };
 
@@ -276,7 +271,7 @@ const AddBullet = (player, entity, entities) => {
     const mY = player.y - entity.y;
     const [uX, uY] = calcUnitVectorFromVector(mX, mY);
     const rotation = calcAngleDegreesFromVector(mX, mY);
-    console.log(rotation)
+    // console.log(rotation)
     const bullet = { x: entity.x,  y: entity.y, renderer: <Bullet />, isAlive: true, type: 'ranged', isAttacking: true, rotation, uX, uY };
     entities[`b${bulletCounter}`] = bullet;
     bulletCounter++;

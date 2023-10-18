@@ -12,6 +12,18 @@ class Box extends PureComponent {
   }
 }
 
+class Particle extends PureComponent {
+  render() {
+    const size = 5;
+    const x = this.props.x - size / 2;
+    const y = this.props.y - size / 2;
+    const sprite = this.props.particleSprite ? <div style={{ position: "absolute", width: size, height: size, backgroundColor: this.props.colour ? this.props.colour : "red", left: x, top: y }} /> : 
+      <div style={{ position: "absolute", width: size, height: size, backgroundColor: this.props.colour ? this.props.colour : "red", left: x, top: y }} />;
+
+      return sprite;
+  }
+}
+
 class Indicator extends PureComponent {
   render() {
     const size = 5;
@@ -80,4 +92,4 @@ class Multiplier extends PureComponent {
   }
 }
 
-export { MeleeEnemy, RangedEnemy, Bullet, Scoreboard, Multiplier };
+export { MeleeEnemy, RangedEnemy, Bullet, Scoreboard, Multiplier, Particle };
