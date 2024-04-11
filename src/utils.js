@@ -23,4 +23,16 @@ const find = (entities, keyName) => {
     return entities[key];
 }
 
-export { add, remove, find }
+const playAudio = (file, onLoop) => {
+    var audio = document.createElement('audio');
+    audio.src = file;
+    document.body.appendChild(audio);
+    audio.play();
+    audio.loop = onLoop || false;
+    
+    audio.onended = function () {
+        this.parentNode.removeChild(this);
+    }
+}
+
+export { add, remove, find, playAudio }

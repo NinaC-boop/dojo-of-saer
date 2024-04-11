@@ -1,4 +1,5 @@
-import { Box, MeleeEnemy, RangedEnemy } from "./renderers";
+import { MeleeEnemy, RangedEnemy } from "./renderers";
+import { playAudio } from './utils';
 
 let score = 0;
 let multiplier = 1;
@@ -12,7 +13,20 @@ let maxEnemies = 5;
 let currentEnemies = 0;
 let totalSpawnedEnemies = 0;
 
+let isPlaying = false;
+
+document.addEventListener("click", function() {
+  isPlaying = true;
+});
+
 const UpdateState = (entities, { input }) => {
+  // Prevent loading until starting screen is gone
+  if (!isPlaying) return entities;
+  if (entities.title.isPlaying === false) {
+    entities.title.isPlaying = true;
+    playAudio('/assets/extremefight.mp3', true);
+  }
+
   if (entities) {
     entities = spawnEnemies(entities);
     entities = UpdatePlayState(entities);
@@ -24,13 +38,11 @@ const UpdateState = (entities, { input }) => {
 function spawnEnemies(entities) {
   spawnTimer--;
   if (spawnTimer <= 0) {
-    console.log('spawning new enemies...')
     while (currentEnemies < maxEnemies) { 
       entities = addEnemy(entities);
     }
+    playAudio('/assets/skrrt.m4a')
     spawnTimer = Math.random() * spawnLength / 2 + spawnLength;
-
-    console.log(`current enemies: ${currentEnemies}`);
   }
   return entities;
 }
@@ -44,9 +56,7 @@ function addEnemy(entities) {
       enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <RangedEnemy />, isAlive: true, type: 'ranged', isAttacking: false, cooldown: 0 };
       break;
     default:
-      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <RangedEnemy />, isAlive: true, type: 'ranged', isAttacking: false, cooldown: 0 };
-
-      // enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <MeleeEnemy />, isAlive: true, type: 'melee', isAttacking: false, cooldown: 0 };
+      enemy = { x: 800 * Math.random(),  y: 600 * Math.random(), renderer: <MeleeEnemy />, isAlive: true, type: 'melee', isAttacking: false, cooldown: 0 };
       break;
   }
 

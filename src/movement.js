@@ -1,5 +1,6 @@
 import { Bullet } from "./renderers";
 import { AnimationHandler, AnimationType } from './animation';
+import { playAudio } from './utils';
 
 let mouseX = 0;
 let mouseY = 0;
@@ -15,6 +16,7 @@ let gameHeight = 600;
 let hitbox = 30;
 let bulletCounter = 0;
 let enemyBulletCooldown = 200;
+let playedDeathSound = false; 
 
 
 const ATTACK_ANIMATION_DURATION = 70;
@@ -40,6 +42,11 @@ const Move = (entities, { input }) => {
     entities = MoveEnemies(entities, { input });
     entities = MoveBullets(entities, { input });
     // entities = MoveIndicator(entities, { input });
+
+    if (!playedDeathSound && playerState === PlayerState.Dead) {
+        playAudio('/assets/end.m4a');
+        playedDeathSound = true;
+    }
   
     return entities;
 };
@@ -219,10 +226,12 @@ function applyEnemyState(player, enemyState, entity, speed, entities) {
             entity.x = entity.x + (player.x - entity.x) * 1.5;
             entity.y = entity.y + (player.y - entity.y) * 1.5;
             entity.isAttacking = true;
+            playAudio('/assets/whirr.m4a')
             break;
         case EnemyState.RangedAttack:
             entity.isAttacking = true;
             entity.cooldown = enemyBulletCooldown;
+            playAudio('/assets/pew.m4a')
             return AddBullet(player, entity, entities);
         case EnemyState.RangedMovement:
             entity.x = entity.x + (player.x - entity.x) * speed;
@@ -271,7 +280,6 @@ const AddBullet = (player, entity, entities) => {
     const mY = player.y - entity.y;
     const [uX, uY] = calcUnitVectorFromVector(mX, mY);
     const rotation = calcAngleDegreesFromVector(mX, mY);
-    // console.log(rotation)
     const bullet = { x: entity.x,  y: entity.y, renderer: <Bullet />, isAlive: true, type: 'ranged', isAttacking: true, rotation, uX, uY };
     entities[`b${bulletCounter}`] = bullet;
     bulletCounter++;
@@ -306,9 +314,12 @@ const UpdateEntities = (entities, { input }) => {
                 if (player.isAttacking === false) {
                     player.isAlive = false;
                     playerState = PlayerState.Dead;
-                } else {
-                    console.log('you have hit the enemy')
+
+                    // remove enemy to prevent audio from continuing
                     enemy.isAlive = false;
+                } else {
+                    enemy.isAlive = false;
+                    playAudio('/assets/boom.m4a')
                 }
             }
 
@@ -321,6 +332,9 @@ const UpdateEntities = (entities, { input }) => {
                 if (player.isAttacking === false) {
                     player.isAlive = false;
                     playerState = PlayerState.Dead;
+
+                    // remove bullet to prevent audio from continuing
+                    bullet.isAlive = false;
                 } else {
                     bullet.isAlive = false;
                 }
